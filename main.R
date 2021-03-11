@@ -107,7 +107,7 @@ for (i in 1:nrow(df_pat_old)) {
                         uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,  "' , '", "F", "' , '", prescriptiondate , "' , '",
                         prescriptionenddate, "' , '" ,regimenome, "' , " ,dispensatrimestral, " , '" ,prescriptionid,  "' ) ;" )
     sql <- paste0(sql_insert,temp_sql)
-    #df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
+    df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
     #print(sql)
     write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
     
@@ -151,20 +151,68 @@ for (i in 1:nrow(df_pat_old)) {
     #prescriptionid <- df_pat_old$prescriptionid[i]   
     #prescricaoespecial <- df_pat_old$prescricaoespecial[i]  
     #motivocriacaoespecial <- df_pat_old$motivocriacaoespecial[i]  
-    sql_insert <- "INSERT INTO public.sync_temp_patients(
+    #sql_insert <- "INSERT INTO public.sync_temp_patients(
+    #id, accountstatus, cellphone, dateofbirth, clinic, clinicname, 
+    #mainclinic, mainclinicname, firstnames, homephone, lastname, 
+    #modified, patientid,  sex, workphone, address1, address2, 
+    #address3, nextofkinname, nextofkinphone, race, uuidopenmrs, datainiciotarv,syncstatus  )
+    #VALUES ("
+    #temp_sql <- paste0( last_id,  " ,",  " FALSE , '" , cellphone, "' , '", dateofbirth, "' , " , 0 ,  " , '" , clinicname, "' , ",mainclinic , " , '",
+    #                    mainclinicname , "' , '", firstnames, "' , '", homephone , "' , '", lastname , "' , '", modified ,  "' , '" , patientid , "' , '" , sex, "' , '",
+    #                    workphone, "' , '", address1 , "' , '" , address2 , "' , '", address3 ,  "' , '", nextofkinname , "' , '" , nextofkinphone, "' , '" , race , "' , '" ,
+    #                    uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,   "' ) ;" )
+    #sql <- paste0(sql_insert,temp_sql)
+    #df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
+    #print(sql)
+    #write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
+     mainclinicname <- df_pat_old$mainclinicname[i]
+    if(nid %in% df_all_prescription$patientid){
+      temp_prescription <- filter(df_all_prescription, patientid==nid)
+      prescriptiondate <- df_all_prescription$date[1]  
+      duration       <- df_all_prescription$duration[1] 
+      prescriptionenddate <-prescriptiondate + (duration/4)*30*24*60*60
+      regimenome     <- gsub(pattern = "/",replacement = "+",x =  substr(df_all_prescription$drugname[1], 2,12) )  
+      dispensatrimestral <- df_all_prescription$dispensatrimestral[1] 
+      prescriptionid <- df_all_prescription$prescriptionid[1]   
+      
+      sql_insert <- "INSERT INTO public.sync_temp_patients(
     id, accountstatus, cellphone, dateofbirth, clinic, clinicname, 
     mainclinic, mainclinicname, firstnames, homephone, lastname, 
     modified, patientid,  sex, workphone, address1, address2, 
-    address3, nextofkinname, nextofkinphone, race, uuidopenmrs, datainiciotarv,syncstatus  )
+    address3, nextofkinname, nextofkinphone, race, uuidopenmrs, datainiciotarv,syncstatus,
+    prescricaoespecial,prescriptiondate,prescriptionenddate,regimenome,dispensatrimestral,prescriptionid)
     VALUES ("
-    temp_sql <- paste0( last_id,  " ,",  " FALSE , '" , cellphone, "' , '", dateofbirth, "' , " , 0 ,  " , '" , clinicname, "' , ",mainclinic , " , '",
-                        mainclinicname , "' , '", firstnames, "' , '", homephone , "' , '", lastname , "' , '", modified ,  "' , '" , patientid , "' , '" , sex, "' , '",
-                        workphone, "' , '", address1 , "' , '" , address2 , "' , '", address3 ,  "' , '", nextofkinname , "' , '" , nextofkinphone, "' , '" , race , "' , '" ,
-                        uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,   "' ) ;" )
-    sql <- paste0(sql_insert,temp_sql)
-    #df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
-    #print(sql)
-    write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
+      
+      temp_sql <- paste0( last_id,  " ,",  " FALSE , '" , cellphone, "' , '", dateofbirth, "' , " , 0 ,  " , '" , clinicname, "' , ",mainclinic , " , '",
+                          mainclinicname , "' , '", firstnames, "' , '", homephone , "' , '", lastname , "' , '", modified ,  "' , '" , patientid , "' , '" , sex, "' , '",
+                          workphone, "' , '", address1 , "' , '" , address2 , "' , '", address3 ,  "' , '", nextofkinname , "' , '" , nextofkinphone, "' , '" , race , "' , '" ,
+                          uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,  "' , '", "F", "' , '", prescriptiondate , "' , '",
+                          prescriptionenddate, "' , '" ,regimenome, "' , " ,dispensatrimestral, " , '" ,prescriptionid,  "' ) ;" )
+      sql <- paste0(sql_insert,temp_sql)
+      df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
+      #print(sql)
+      write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
+      
+ 
+    } else {
+      sql_insert <- "INSERT INTO public.sync_temp_patients(
+      id, accountstatus, cellphone, dateofbirth, clinic, clinicname, 
+      mainclinic, mainclinicname, firstnames, homephone, lastname, 
+      modified, patientid,  sex, workphone, address1, address2, 
+      address3, nextofkinname, nextofkinphone, race, uuidopenmrs, datainiciotarv,syncstatus  )
+      VALUES ("
+      temp_sql <- paste0( last_id,  " ,",  " FALSE , '" , cellphone, "' , '", dateofbirth, "' , " , 0 ,  " , '" , clinicname, "' , ",mainclinic , " , '",
+                          mainclinicname , "' , '", firstnames, "' , '", homephone , "' , '", lastname , "' , '", modified ,  "' , '" , patientid , "' , '" , sex, "' , '",
+                          workphone, "' , '", address1 , "' , '" , address2 , "' , '", address3 ,  "' , '", nextofkinname , "' , '" , nextofkinphone, "' , '" , race , "' , '" ,
+                          uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,   "' ) ;" )
+      sql <- paste0(sql_insert,temp_sql)
+      df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
+      write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
+      
+      
+    }
+    
+   
   }
 }
 
