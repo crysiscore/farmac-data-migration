@@ -3,27 +3,12 @@ require(RPostgreSQL)
 require(plyr)
 require(dplyr)
 setwd('/home/agnaldo/Git/iDART/farmac_data_migration/')
-# Configuracao de Parametros  #
-
-postgres.user ='postgres'        
-postgres.password='postgres' 
-postgres.db.name='central'                  
-postgres.host='172.18.0.3'                  
-postgres.port=5432                        
-
-
-postgres.old.user ='postgres'        
-postgres.old.password='postgres' 
-postgres.old.db.name='pharm'                  
-postgres.old.host='172.18.0.3'                  
-postgres.old.port=5432                        
 
 source('generic_functions.R')          
 
 # Objecto de connexao com a bd openmrs postgreSQL
-con_postgres_old <-  dbConnect(PostgreSQL(),user = postgres.old.user,password = postgres.old.password, dbname = postgres.old.db.name,host = postgres.old.host)
-
-con_postgres_new <-  dbConnect(PostgreSQL(),user = postgres.user,password = postgres.password, dbname = postgres.db.name,host = postgres.host)
+con_postgres_old <-  get.postgres.conection("pharm")
+con_postgres_new <-   get.postgres.conection("central")
 
 df_pat_new <- get.all.patients.farmac(con_postgres_new)
 df_pat_old <- get.all.patients.farmac(con_postgres_old)
@@ -122,7 +107,7 @@ for (i in 1:nrow(df_pat_old)) {
                         uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,  "' , '", "F", "' , '", prescriptiondate , "' , '",
                         prescriptionenddate, "' , '" ,regimenome, "' , " ,dispensatrimestral, " , '" ,prescriptionid,  "' ) ;" )
     sql <- paste0(sql_insert,temp_sql)
-    df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
+    #df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
     #print(sql)
     write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
     
@@ -177,7 +162,7 @@ for (i in 1:nrow(df_pat_old)) {
                         workphone, "' , '", address1 , "' , '" , address2 , "' , '", address3 ,  "' , '", nextofkinname , "' , '" , nextofkinphone, "' , '" , race , "' , '" ,
                         uuidopenmrs , "' , '" , datainiciotarv,  "' , '", "I" ,   "' ) ;" )
     sql <- paste0(sql_insert,temp_sql)
-    df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
+    #df_pat_old$insert_result[i] <- dbExecute(con_postgres_new,sql)
     #print(sql)
     write(sql,file='sql_farmac_insert_old_patients.sql',append=TRUE)
   }
